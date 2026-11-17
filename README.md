@@ -6,6 +6,11 @@ CMIS-inspired I2C module management firmware on **Zephyr RTOS 4.5**, running on 
 STM32 NUCLEO-F411RE that plays the role of a pluggable optical module, managed by a
 Linux host (Raspberry Pi 3) over I2C.
 
+![Raspberry Pi 3 (host) wired to NUCLEO-F411RE (module) over I2C](docs/images/hardware-setup.jpg)
+
+*Raspberry Pi 3 as the I2C host (left) and NUCLEO-F411RE running the module firmware
+(right), connected by SDA, SCL and GND.*
+
 > **Scope:** this is a simplified subset *inspired by* CMIS (Common Management
 > Interface Specification). It is **not** CMIS compliant. See
 > [Simplifications](#simplifications-vs-cmis).
