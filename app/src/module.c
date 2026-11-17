@@ -49,6 +49,40 @@ enum cmis_state module_get_state(void)
 	return state;
 }
 
+void module_update_monitors(int16_t temp_q8, uint16_t vcc_100uv)
+{
+	k_spinlock_key_t key = k_spin_lock(&module_lock);
+
+	cmis_set_monitors(&module_ctx, temp_q8, vcc_100uv);
+	k_spin_unlock(&module_lock, key);
+}
+
+void module_set_fault(bool fault)
+{
+	k_spinlock_key_t key = k_spin_lock(&module_lock);
+	bool changed = (module_ctx.fault != fault);
+
+	cmis_set_fault(&module_ctx, fault);
+	k_spin_unlock(&module_lock, key);
+
+	if (changed) {
+		LOG_WRN("sensor fault %s", fault ? "set" : "cleared");
+		module_request_process();
+	}
+}
+
+void module_get_monitors(int16_t *temp_q8, uint16_t *vcc_100uv, uint8_t *flags)
+{
+	k_spinlock_key_t key = k_spin_lock(&module_lock);
+
+	*temp_q8 = (int16_t)((cmis_peek(&module_ctx, CMIS_REG_TEMP_MSB) << 8) |
+			     cmis_peek(&module_ctx, CMIS_REG_TEMP_LSB));
+	*vcc_100uv = (uint16_t)((cmis_peek(&module_ctx, CMIS_REG_VCC_MSB) << 8) |
+				cmis_peek(&module_ctx, CMIS_REG_VCC_LSB));
+	*flags = cmis_peek(&module_ctx, CMIS_REG_LATCHED_FLAGS);
+	k_spin_unlock(&module_lock, key);
+}
+
 static bool is_transitional(enum cmis_state state)
 {
 	return state == CMIS_STATE_RESET || state == CMIS_STATE_PWR_UP;

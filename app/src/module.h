@@ -22,6 +22,15 @@ void module_init(void);
 void module_request_process(void);
 
 enum cmis_state module_get_state(void);
+
+/* Push a new sensor sample into the core (thread context). */
+void module_update_monitors(int16_t temp_q8, uint16_t vcc_100uv);
+
+/* Report sensor health; a fault moves the module to FAULT. */
+void module_set_fault(bool fault);
+
+/* Snapshot of the monitor registers for logging (no side effects). */
+void module_get_monitors(int16_t *temp_q8, uint16_t *vcc_100uv, uint8_t *flags);
 const char *module_state_name(enum cmis_state state);
 
 /* Register the I2C target (defined in i2c_target.c). */

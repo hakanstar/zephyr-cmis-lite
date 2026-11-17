@@ -24,8 +24,18 @@ int main(void)
 	}
 
 	while (true) {
-		LOG_INF("heartbeat %u, state %s", tick++,
-			module_state_name(module_get_state()));
+		int16_t temp_q8;
+		uint16_t vcc;
+		uint8_t flags;
+
+		module_get_monitors(&temp_q8, &vcc, &flags);
+		/* temp_q8 / 256 = degC; print with one decimal using integers only */
+		int32_t t10 = ((int32_t)temp_q8 * 10) / 256;
+
+		LOG_INF("hb %u, state %s, temp %d.%d C, vcc %u.%04u V, flags 0x%02x",
+			tick++, module_state_name(module_get_state()),
+			t10 / 10, (t10 < 0 ? -t10 : t10) % 10,
+			vcc / 10000U, vcc % 10000U, flags);
 		k_sleep(HEARTBEAT_PERIOD);
 	}
 
