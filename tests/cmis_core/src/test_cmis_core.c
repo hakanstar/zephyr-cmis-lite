@@ -190,6 +190,23 @@ ZTEST(cmis_core, test_host_lowers_threshold_to_trigger_alarm)
 	zassert_equal(cmis_read(&ctx, CMIS_REG_LATCHED_FLAGS), CMIS_FLAG_TEMP_HIGH);
 }
 
+ZTEST(cmis_core, test_peek_has_no_side_effects)
+{
+	cmis_set_monitors(&ctx, 80 * 256, 33000);
+	zassert_equal(cmis_peek(&ctx, CMIS_REG_LATCHED_FLAGS), CMIS_FLAG_TEMP_HIGH);
+	zassert_equal(cmis_peek(&ctx, CMIS_REG_LATCHED_FLAGS), CMIS_FLAG_TEMP_HIGH,
+		      "peek must not clear latched flags");
+	zassert_equal(cmis_read(&ctx, CMIS_REG_LATCHED_FLAGS), CMIS_FLAG_TEMP_HIGH);
+	zassert_equal(cmis_peek(&ctx, CMIS_REG_LATCHED_FLAGS), 0x00);
+}
+
+ZTEST(cmis_core, test_peek_follows_page_select)
+{
+	zassert_equal(cmis_peek(&ctx, CMIS_P00_VENDOR_NAME), 'S');
+	zassert_equal(cmis_write(&ctx, CMIS_REG_PAGE_SELECT, 0x02), CMIS_OK);
+	zassert_equal(cmis_peek(&ctx, CMIS_P02_TEMP_HIGH_ALARM), 0x4B);
+}
+
 ZTEST(cmis_core, test_low_temp_and_vcc_alarms)
 {
 	cmis_set_monitors(&ctx, -10 * 256, 29000);

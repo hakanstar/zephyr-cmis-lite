@@ -6,17 +6,11 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
-#include "cmis_core.h"
+#include "module.h"
 
 LOG_MODULE_REGISTER(app, LOG_LEVEL_INF);
 
-static struct cmis_ctx module;
-
-static const struct cmis_identity module_id = {
-	.vendor = "STAR LABS",
-	.part_number = "CMIS-LITE-01",
-	.serial = "SN0001",
-};
+#define HEARTBEAT_PERIOD K_SECONDS(5)
 
 int main(void)
 {
@@ -24,14 +18,15 @@ int main(void)
 
 	LOG_INF("cmis-lite booting on %s", CONFIG_BOARD_TARGET);
 
-	cmis_init(&module, &module_id);
-	cmis_process(&module); /* RESET -> LOW_PWR */
-	LOG_INF("module state %d, reg 0x03 = 0x%02x", cmis_get_state(&module),
-		cmis_read(&module, CMIS_REG_MODULE_STATE));
+	module_init();
+	if (module_i2c_target_init() != 0) {
+		LOG_ERR("running without I2C target");
+	}
 
-	while (1) {
-		LOG_INF("heartbeat %u", tick++);
-		k_sleep(K_SECONDS(1));
+	while (true) {
+		LOG_INF("heartbeat %u, state %s", tick++,
+			module_state_name(module_get_state()));
+		k_sleep(HEARTBEAT_PERIOD);
 	}
 
 	return 0;

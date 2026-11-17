@@ -77,17 +77,10 @@ int cmis_init(struct cmis_ctx *ctx, const struct cmis_identity *id)
 	return CMIS_OK;
 }
 
-uint8_t cmis_read(struct cmis_ctx *ctx, uint8_t addr)
+uint8_t cmis_peek(const struct cmis_ctx *ctx, uint8_t addr)
 {
-	uint8_t val;
-
 	if (addr < CMIS_PAGE_SIZE) {
-		val = ctx->lower[addr];
-		if (addr == CMIS_REG_LATCHED_FLAGS) {
-			ctx->lower[CMIS_REG_LATCHED_FLAGS] = 0U;
-			update_module_state_reg(ctx);
-		}
-		return val;
+		return ctx->lower[addr];
 	}
 
 	switch (ctx->lower[CMIS_REG_PAGE_SELECT]) {
@@ -98,6 +91,17 @@ uint8_t cmis_read(struct cmis_ctx *ctx, uint8_t addr)
 	default:
 		return 0x00U; /* unreachable: page select is validated on write */
 	}
+}
+
+uint8_t cmis_read(struct cmis_ctx *ctx, uint8_t addr)
+{
+	uint8_t val = cmis_peek(ctx, addr);
+
+	if (addr == CMIS_REG_LATCHED_FLAGS) {
+		ctx->lower[CMIS_REG_LATCHED_FLAGS] = 0U;
+		update_module_state_reg(ctx);
+	}
+	return val;
 }
 
 int cmis_write(struct cmis_ctx *ctx, uint8_t addr, uint8_t value)

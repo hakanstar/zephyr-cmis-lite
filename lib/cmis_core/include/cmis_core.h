@@ -101,6 +101,12 @@ int cmis_init(struct cmis_ctx *ctx, const struct cmis_identity *id);
 /* Host-visible byte read. Reading 0x08 clears the latched flags. */
 uint8_t cmis_read(struct cmis_ctx *ctx, uint8_t addr);
 
+/*
+ * Side-effect-free read. Use it where a byte may be fetched but never
+ * reach the host, e.g. an I2C target driver prefetching the next byte.
+ */
+uint8_t cmis_peek(const struct cmis_ctx *ctx, uint8_t addr);
+
 /* Host-visible byte write. Returns enum cmis_status. */
 int cmis_write(struct cmis_ctx *ctx, uint8_t addr, uint8_t value);
 
