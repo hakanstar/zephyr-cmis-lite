@@ -1,0 +1,7 @@
+tests:
+  cmis_core.unit:
+    tags: cmis
+    platform_allow:
+      - native_sim
+    integration_platforms:
+      - native_sim
