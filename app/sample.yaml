@@ -1,0 +1,11 @@
+sample:
+  name: CMIS-lite module firmware
+common:
+  tags: cmis
+tests:
+  app.cmis_lite.build:
+    build_only: true
+    platform_allow:
+      - nucleo_f411re
+    integration_platforms:
+      - nucleo_f411re

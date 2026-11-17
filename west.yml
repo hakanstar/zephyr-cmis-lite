@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.5.0
+      import:
+        # Only the modules this project needs
+        name-allowlist:
+          - cmsis      # Cortex-M support
+          - cmsis_6    # Cortex-M support (CMSIS 6)
+          - hal_stm32  # NUCLEO-F411RE

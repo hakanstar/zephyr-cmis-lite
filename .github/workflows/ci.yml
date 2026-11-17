@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: Apache-2.0
+# Based on zephyrproject-rtos/example-application
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build firmware and run unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: zephyr-cmis-lite
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: 3.12
+
+      - name: Setup Zephyr project
+        uses: zephyrproject-rtos/action-zephyr-setup@be8136a8bba01580485d98b7ad2d32477c36a49a # v1.0.15
+        with:
+          app-path: zephyr-cmis-lite
+          toolchains: arm-zephyr-eabi
+
+      - name: Build firmware (NUCLEO-F411RE)
+        working-directory: zephyr-cmis-lite
+        run: west twister -T app -v --inline-logs --integration -O twister-out-app
+
+      - name: Unit tests (ztest on native_sim)
+        working-directory: zephyr-cmis-lite
+        run: west twister -T tests -v --inline-logs --integration -O twister-out-tests
+
+      - name: Upload firmware and test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmis-lite-ci
+          path: |
+            zephyr-cmis-lite/twister-out-app/**/zephyr/zephyr.hex
+            zephyr-cmis-lite/twister-out-app/**/zephyr/zephyr.elf
+            zephyr-cmis-lite/twister-out-*/twister.xml
+          if-no-files-found: warn
