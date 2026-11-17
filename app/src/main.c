@@ -10,7 +10,7 @@
 
 LOG_MODULE_REGISTER(app, LOG_LEVEL_INF);
 
-#define HEARTBEAT_PERIOD K_SECONDS(5)
+#define HEARTBEAT_PERIOD K_SECONDS(30) /* use 'cmis status' for on-demand values */
 
 int main(void)
 {

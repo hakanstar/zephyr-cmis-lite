@@ -10,6 +10,7 @@ target_sources(app PRIVATE
   src/module.c
   src/i2c_target.c
   src/sensor.c
+  src/shell_cmds.c
   ${CMIS_CORE_DIR}/src/cmis_core.c
 )
 target_include_directories(app PRIVATE ${CMIS_CORE_DIR}/include)

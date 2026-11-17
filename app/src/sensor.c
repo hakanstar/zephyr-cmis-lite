@@ -9,12 +9,25 @@
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/atomic.h>
 
 #include "module.h"
 
 LOG_MODULE_REGISTER(sensor, LOG_LEVEL_INF);
 
 #define SAMPLE_PERIOD K_SECONDS(1)
+
+static atomic_t fault_injected;
+
+void sensor_inject_fault(bool on)
+{
+	atomic_set(&fault_injected, on ? 1 : 0);
+}
+
+bool sensor_fault_injected(void)
+{
+	return atomic_get(&fault_injected) != 0;
+}
 
 static const struct device *const temp_dev = DEVICE_DT_GET(DT_NODELABEL(die_temp));
 static const struct device *const vref_dev = DEVICE_DT_GET(DT_NODELABEL(vref));
@@ -68,7 +81,9 @@ static void sensor_thread(void *p1, void *p2, void *p3)
 		int ret_t = read_channel(temp_dev, SENSOR_CHAN_DIE_TEMP, &temp);
 		int ret_v = read_channel(vref_dev, SENSOR_CHAN_VOLTAGE, &vcc);
 
-		if (ret_t != 0 || ret_v != 0) {
+		if (sensor_fault_injected()) {
+			module_set_fault(true);
+		} else if (ret_t != 0 || ret_v != 0) {
 			LOG_ERR("sensor read failed (temp %d, vref %d)", ret_t, ret_v);
 			module_set_fault(true);
 		} else {

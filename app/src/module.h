@@ -33,6 +33,10 @@ void module_set_fault(bool fault);
 void module_get_monitors(int16_t *temp_q8, uint16_t *vcc_100uv, uint8_t *flags);
 const char *module_state_name(enum cmis_state state);
 
+/* Force a simulated sensor failure (defined in sensor.c). */
+void sensor_inject_fault(bool on);
+bool sensor_fault_injected(void);
+
 /* Register the I2C target (defined in i2c_target.c). */
 int module_i2c_target_init(void);
 
